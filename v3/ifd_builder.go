@@ -1006,6 +1006,7 @@ func (ib *IfdBuilder) AddTagsFromExisting(ifd *Ifd, includeTagIds []uint16, excl
 	}
 
 	for i, ite := range ifd.Entries() {
+
 		if ite.IsThumbnailOffset() == true || ite.IsThumbnailSize() {
 			// These will be added on-the-fly when we encode.
 			continue
