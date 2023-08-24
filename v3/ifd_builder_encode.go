@@ -225,6 +225,21 @@ func (ibe *IfdByteEncoder) encodeTagToBytes(ib *IfdBuilder, bt *BuilderTag, bw *
 			effectiveType = exifcommon.TypeByte
 		}
 
+		// HACK: these two tags of type undefined are represented by
+		// a single long value, rather than bytes. The code above assumes
+		// that all undefined tags consist of variable count of bytes.
+		// This assumption is a problem for these two tags as it results in
+		// their count field ending up being 4 bytes (a long is 4 bytes) and
+		// their offset being interpreded as an offset rather than a diredt
+		// value. As a result 4 longs are being read from an offset from the
+		// start of the TIFF header and these two tags end up being corrupted,
+		// which is detected by tools like the `exif` command, which complain
+		// that these are wrongly sized. This is just a hack to avoid this issue.
+		// A proper fix is needed
+		if bt.tagId == 0xa300 || bt.tagId == 0xa301 {
+			effectiveType = exifcommon.TypeLong
+		}
+
 		// It's a non-unknown value.Calculate the count of values of
 		// the type that we're writing and the raw bytes for the whole list.
 
